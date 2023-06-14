@@ -141,10 +141,13 @@ const handleGenerateMsg = (e: Event) => {
       loading.value = true
       //进行网络请求
       let p = deplay(3000)
-      p.then(() => {
+      p.then((data: string) => {
+        console.log(data);
         flag.value = true
         loading.value = false
         message.success("成功")
+      }).catch(() => {
+
       })
     } else {
       console.log(errors)
