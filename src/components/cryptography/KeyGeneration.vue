@@ -53,7 +53,7 @@ import { reactive, ref } from 'vue'
 import type { FormInst } from 'naive-ui'
 import Clipboard from 'clipboard'
 import { CopyOutline } from '@vicons/ionicons5'
-import { getKeys } from '@/api/cryptography'
+import { getKeys, type KeyGenAlg } from '@/api/cryptography'
 
 const formRef = ref<FormInst | null>(null)
 
@@ -96,12 +96,12 @@ const handleValidateButtonClick = (e: Event) => {
   formRef.value?.validate((errors) => {
     if (!errors) {
       const { prams, selectValue } = model
-      console.log(prams, selectValue)
+      console.log(prams, selectValue as KeyGenAlg)
       flag.value = true
       console.log('验证成功')
       getKeys({
         params: {},
-        keyGenAlg: "ECC"
+        keyGenAlg: selectValue as KeyGenAlg
       })
       model.pk = 'asklhdjasljdl'
       model.sk = 'sa;lsjdklas'
@@ -116,7 +116,6 @@ const handleValidateButtonClick = (e: Event) => {
 
 const handleReset = () => {
   formRef.value?.restoreValidation()
-
   flag.value = false
   model.prams = ''
   model.selectValue = ''

@@ -1,7 +1,7 @@
-export const deplay = (time: number): Promise<string> => {
+export const delay = (time: number): Promise<boolean> => {
   return new Promise((resolve) => {
     setTimeout(() => {
-      resolve("123")
+      resolve(true)
     }, time)
   })
 }

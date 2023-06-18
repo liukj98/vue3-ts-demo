@@ -70,7 +70,7 @@ import { reactive, ref } from 'vue'
 import type { UploadFileInfo, FormInst, UploadInst } from 'naive-ui'
 import { useMessage } from 'naive-ui'
 import { CloudUploadOutline } from '@vicons/ionicons5'
-import { deplay } from '@/utils/index'
+import { delay } from '@/utils/index'
 
 const message = useMessage();
 
@@ -140,8 +140,8 @@ const handleGenerateMsg = (e: Event) => {
 
       loading.value = true
       //进行网络请求
-      let p = deplay(3000)
-      p.then((data: string) => {
+      let p = delay(3000)
+      p.then((data: boolean) => {
         console.log(data);
         flag.value = true
         loading.value = false
