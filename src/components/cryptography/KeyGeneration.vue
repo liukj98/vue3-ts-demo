@@ -53,6 +53,7 @@ import { reactive, ref } from 'vue'
 import type { FormInst } from 'naive-ui'
 import Clipboard from 'clipboard'
 import { CopyOutline } from '@vicons/ionicons5'
+import { getKeys } from '@/api/cryptography'
 
 const formRef = ref<FormInst | null>(null)
 
@@ -98,6 +99,10 @@ const handleValidateButtonClick = (e: Event) => {
       console.log(prams, selectValue)
       flag.value = true
       console.log('验证成功')
+      getKeys({
+        params: {},
+        keyGenAlg: "ECC"
+      })
       model.pk = 'asklhdjasljdl'
       model.sk = 'sa;lsjdklas'
       new Clipboard('.btn')
