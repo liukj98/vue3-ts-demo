@@ -2,7 +2,7 @@
   <div class="app">
     <n-message-provider>
       <div style="display: flex">
-        <router-link to="/app-show">
+        <router-link style="margin-right: 20px" to="/app-show">
           <n-card size="small" title="应用展示"> 展示代理重加密内容 </n-card>
         </router-link>
         <router-link to="/crypto-module">
@@ -15,9 +15,7 @@
   </div>
 </template>
 
-<script lang="ts" setup>
-
-</script>
+<script lang="ts" setup></script>
 
 <style scoped>
 .app {
@@ -30,13 +28,15 @@ a {
   max-width: 300px;
   margin: 10px;
   cursor: pointer;
+  margin-right: 20px;
 }
 .router-link-active .n-card {
   /* background-color: #; */
   color: #18a058;
 }
 
-.router-link-active .n-card .n-card-header__main {
-  color: #fff;
+.router-link-active .n-card > .n-card-header .n-card-header__main {
+  color: #18a058 !important;
 }
+
 </style>

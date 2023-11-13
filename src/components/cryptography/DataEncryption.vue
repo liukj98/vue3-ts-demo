@@ -6,7 +6,7 @@
     label-width="140"
     :rules="rules"
     :style="{
-      maxWidth: '440px',
+      maxWidth: '440px'
     }"
   >
     <n-form-item label="选择文件">
@@ -27,31 +27,40 @@
         >
       </n-upload>
     </n-form-item>
-    <n-form-item label="要加密的数据" path="plaintext">
+    <n-form-item label="要加密的数据" path="msg">
       <n-input
         style="width: 460px"
-        v-model:value="model.plaintext"
+        v-model:value="model.msg"
         type="textarea"
         placeholder="要加密的数据"
       />
     </n-form-item>
-    <n-form-item label="加密密钥" path="pk">
-      <n-input style="width: 460px" v-model:value="model.pk" placeholder="请输入加密密钥" />
+    <n-form-item label="数据发送方 ID" path="senderID">
+      <n-input
+        style="width: 460px"
+        v-model:value="model.senderID"
+        placeholder="请输入数据发送方 ID"
+      />
     </n-form-item>
-    <n-form-item label="加密算法" path="selectAlg">
+    <div v-if="props.encyptionType === 're-encryption'">
+      <n-form-item label="重加密密钥" path="reKey">
+        <n-input style="width: 460px" v-model:value="model.reKey" placeholder="请输入重加密密钥" />
+      </n-form-item>
+    </div>
+    <n-form-item label="加密算法" path="selectedAlg">
       <n-select
-        v-model:value="model.selectAlg"
+        v-model:value="model.selectedAlg"
         placeholder="请选择加密算法"
         :options="model.algOptions"
       />
     </n-form-item>
     <n-form-item label=" ">
       <div style="display: flex; justify-content: space-between; width: 100%">
-        <n-button :loading="loading" type="primary" @click="handleGenerateMsg"> Encrypt </n-button>
+        <n-button :loading="loading" type="primary" @click="handleEncrypt"> Encrypt </n-button>
         <n-button @click="handleReset" style="margin-left: 10px"> Reset </n-button>
       </div>
     </n-form-item>
-    <template v-if="flag">
+    <template v-if="isShowEncryptMsg">
       <n-form-item label="密文">
         <n-input
           style="width: 460px"
@@ -66,32 +75,40 @@
 </template>
 
 <script lang="ts" setup>
-import { reactive, ref } from 'vue'
+import { reactive, ref, defineProps } from 'vue'
 import type { UploadFileInfo, FormInst, UploadInst } from 'naive-ui'
 import { useMessage } from 'naive-ui'
 import { CloudUploadOutline } from '@vicons/ionicons5'
 import { delay } from '@/utils/index'
+import type { FromType, EncryptionType } from '@/type/index'
 
-const message = useMessage();
+const props = defineProps<{ from: FromType; encyptionType?: EncryptionType }>()
+
+const message = useMessage()
 
 const formRef = ref<FormInst | null>(null)
 const uploadRef = ref<UploadInst | null>(null)
 const loading = ref(false)
 
-const flag = ref(false)
+const isShowEncryptMsg = ref(false)
 
 const rules = {
-  plaintext: {
+  msg: {
     required: true,
     trigger: ['blur', 'input'],
     message: '请输入要加密的数据'
   },
-  pk: {
+  senderID: {
     required: true,
     trigger: ['blur', 'input'],
-    message: '请输入加密密钥'
+    message: '请输入数据发送方 ID'
   },
-  selectAlg: {
+  reKey: {
+    required: true,
+    trigger: ['blur', 'input'],
+    message: '请输入重加密密钥'
+  },
+  selectedAlg: {
     required: true,
     trigger: ['blur', 'input'],
     message: '请选择加密算法'
@@ -99,18 +116,15 @@ const rules = {
 }
 
 const model = reactive({
-  selectAlg: '',
-  plaintext: '',
-  ciphertext: '',
-  pk: '',
+  selectedAlg: '', // 加密算法
+  msg: '', // 要加密的数据
+  ciphertext: '', // 加密后的结果
+  reKey: '', // 重加密密钥
+  senderID: '', // 发送方 ID
   algOptions: [
     {
-      label: 'RSA',
-      value: 'RSA'
-    },
-    {
-      label: 'ECC',
-      value: 'ECC'
+      label: 'IBPRE',
+      value: 'IBPRE'
     }
   ]
 })
@@ -121,39 +135,35 @@ const handleFinish = ({ file, event }: { file: UploadFileInfo; event?: ProgressE
   const reader = new FileReader()
   reader.readAsText(file.file as Blob, 'uft-8')
   reader.onload = () => {
-    model.plaintext = reader.result as string
+    model.msg = reader.result as string
   }
   return file
 }
 
 const handleRemove = () => {
-  model.plaintext = ''
+  model.msg = ''
 }
 
-const handleGenerateMsg = (e: Event) => {
-  
+const handleEncrypt = (e: Event) => {
   e.preventDefault()
 
   formRef.value?.validate((errors) => {
     if (!errors) {
       console.log(model)
-
       loading.value = true
       //进行网络请求
       let p = delay(3000)
       p.then((data: boolean) => {
-        console.log(data);
-        flag.value = true
+        console.log(data)
+        isShowEncryptMsg.value = true
         loading.value = false
-        message.success("成功")
-      }).catch(() => {
-
-      })
+        message.success('成功')
+      }).catch(() => {})
     } else {
       console.log(errors)
       // message.error('验证失败')
       console.log('验证失败')
-      message.error("失败")
+      message.error('失败')
     }
   })
 }
@@ -161,10 +171,11 @@ const handleGenerateMsg = (e: Event) => {
 // 重置
 const handleReset = () => {
   formRef.value?.restoreValidation()
-  model.plaintext = ''
-  model.pk = ''
-  model.selectAlg = ''
-  flag.value = false
+  isShowEncryptMsg.value = false
+  // TODO:
+  model.msg = ''
+  model.reKey = ''
+  model.selectedAlg = ''
   uploadRef.value?.clear()
 }
 </script>

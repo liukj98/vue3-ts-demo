@@ -9,19 +9,34 @@
       maxWidth: '440px'
     }"
   >
-    <n-form-item label="参数" path="prams">
-      <n-input v-model:value="model.prams" placeholder="请输入参数" />
-    </n-form-item>
-    <n-form-item label="密钥生成算法" path="selectValue">
-      <n-select v-model:value="model.selectValue" placeholder="请选择" :options="model.options" />
+    <template v-if="props.from === 'sender'">
+      <n-form-item label="数据发送方 ID" path="senderID">
+        <n-input v-model:value="model.senderID" placeholder="请输入数据发送方 ID" />
+      </n-form-item>
+    </template>
+    <template v-else>
+      <n-form-item label="数据接收方 ID" path="receiverID">
+        <n-input v-model:value="model.receiverID" placeholder="请输入数据接收方 ID" />
+      </n-form-item>
+    </template>
+    <div v-if="props.isReKey">
+      <n-form-item label="数据接收方 ID" path="receiverID">
+        <n-input v-model:value="model.receiverID" placeholder="请输入数据接收方 ID" />
+      </n-form-item>
+      <n-form-item label="数据发送方私钥" path="secretKey">
+        <n-input v-model:value="model.secretKey" placeholder="请输入私钥" />
+      </n-form-item>
+    </div>
+    <n-form-item label="密钥生成算法" path="selectedAlg">
+      <n-select v-model:value="model.selectedAlg" placeholder="请选择" :options="model.options" />
     </n-form-item>
     <n-form-item label=" ">
       <div style="display: flex; justify-content: space-between; width: 100%">
-        <n-button type="primary" @click="handleValidateButtonClick"> Generate Key </n-button>
+        <n-button type="primary" @click="handleKeyGeneration"> Generate Key </n-button>
         <n-button @click="handleReset" style="margin-left: 10px"> Reset </n-button>
       </div>
     </n-form-item>
-    <template v-if="flag">
+    <template v-if="isShowGeneratedKey">
       <n-form-item label="公钥" path="pk">
         <span id="pk-cp">{{ model.pk }}</span>
         <n-icon
@@ -49,66 +64,76 @@
 </template>
 
 <script lang="ts" setup>
-import { reactive, ref } from 'vue'
+import { reactive, ref, defineProps } from 'vue'
 import type { FormInst } from 'naive-ui'
 import Clipboard from 'clipboard'
 import { CopyOutline } from '@vicons/ionicons5'
-import { getKeys, type KeyGenAlg } from '@/api/cryptography'
+import { getKeys } from '@/api/cryptography'
+import type { KeyGenAlg, FromType } from '@/type/index'
+
+const props = defineProps<{ from: FromType; isReKey?: boolean }>()
+
+console.log(props.from)
 
 const formRef = ref<FormInst | null>(null)
 
-const flag = ref(false)
+const isShowGeneratedKey = ref(false)
 
 let model = reactive({
-  prams: '',
-  selectValue: '',
+  senderID: '',
+  receiverID: '',
+  secretKey: '',
+  selectedAlg: '',
   pk: '',
   sk: '',
   options: [
     {
-      label: 'RSA',
-      value: 'RSA'
-    },
-    {
-      label: 'ECC',
-      value: 'ECC'
+      label: 'IBPRE',
+      value: 'IBPRE'
     }
   ]
 })
 
 const rules = {
-  prams: {
+  senderID: {
     required: true,
     trigger: ['blur', 'input'],
-    message: '请输入参数'
+    message: '请输入数据发送方 ID'
   },
-
-  selectValue: {
+  receiverID: {
+    required: true,
+    trigger: ['blur', 'input'],
+    message: '请输入数据接收方 ID'
+  },
+  secretKey: {
+    required: true,
+    trigger: ['blur', 'input'],
+    message: '请输入数据接收方私钥'
+  },
+  selectedAlg: {
     required: true,
     trigger: ['blur', 'input'],
     message: '请选择一个算法'
   }
 }
 
-const handleValidateButtonClick = (e: Event) => {
+const handleKeyGeneration = (e: Event) => {
   e.preventDefault()
-
   formRef.value?.validate((errors) => {
     if (!errors) {
-      const { prams, selectValue } = model
-      console.log(prams, selectValue as KeyGenAlg)
-      flag.value = true
+      const { selectedAlg } = model
+      isShowGeneratedKey.value = true
       console.log('验证成功')
+      console.log(model)
       getKeys({
         params: {},
-        keyGenAlg: selectValue as KeyGenAlg
+        keyGenAlg: selectedAlg as KeyGenAlg
       })
       model.pk = 'asklhdjasljdl'
       model.sk = 'sa;lsjdklas'
       new Clipboard('.btn')
     } else {
       console.log(errors)
-      // message.error('验证失败')
       console.log('验证失败')
     }
   })
@@ -116,8 +141,9 @@ const handleValidateButtonClick = (e: Event) => {
 
 const handleReset = () => {
   formRef.value?.restoreValidation()
-  flag.value = false
-  model.prams = ''
-  model.selectValue = ''
+  isShowGeneratedKey.value = false
+  // TODO:
+  // model.senderID = ''
+  // model.selectedAlg = ''
 }
 </script>

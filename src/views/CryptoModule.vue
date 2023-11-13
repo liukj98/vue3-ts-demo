@@ -1,13 +1,13 @@
 <template>
   <n-tabs type="card">
     <n-tab-pane name="chap1" tab="密钥生成模块">
-      <KeyGeneration />
+      <KeyGeneration from="sender" />
     </n-tab-pane>
     <n-tab-pane name="chap2" tab="数据加密模块">
-      <DataEncryption />
+      <DataEncryption from="sender"/>
     </n-tab-pane>
     <n-tab-pane name="chap3" tab="数据解密模块">
-      <DataDecryption />
+      <DataDecryption from="sender" />
     </n-tab-pane>
     <n-tab-pane name="chap4" tab="数据校验模块">
       <DataValidation />

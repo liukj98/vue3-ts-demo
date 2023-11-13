@@ -1,6 +1,6 @@
 <template>
   <div>
-    <DataDecryption />
+    <DataDecryption from="attacker" />
   </div>
 </template>
 
